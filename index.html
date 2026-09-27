@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Parqueadero de Motos UdeA</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<!-- ============ Pantalla de login ============ -->
+<div id="pantalla-login" class="pantalla-login" hidden>
+    <div class="login-tarjeta">
+        <span class="marca-linea1">PARQUEADERO DE MOTOS</span>
+        <span class="marca-linea2">Universidad de Antioquia</span>
+        <p class="login-texto">Ingresa con tu correo institucional para consultar la disponibilidad del parqueadero.</p>
+        <a href="https://parqueaderos-udea.onrender.com/auth/google" class="boton boton-primario boton-google">Ingresar con Google</a>
+        <p class="login-nota">Solo cuentas @udea.edu.co</p>
+    </div>
+</div>
+
+<!-- ============ App ============ -->
+<div id="tablero" class="tablero" hidden>
+
+    <aside class="directorio">
+        <div class="directorio-cabecera">
+            <span class="marca-linea1">MOTOS UdeA</span>
+            <span class="marca-linea2">Parqueadero</span>
+        </div>
+
+        <nav class="menu-secciones">
+            <button class="item-seccion activo" data-seccion="disponibilidad">Disponibilidad</button>
+            <button class="item-seccion solo-empleado" data-seccion="porteria" hidden>Portería</button>
+            <button class="item-seccion solo-empleado" data-seccion="notificaciones" hidden>Notificaciones</button>
+            <button class="item-seccion solo-empleado" data-seccion="admin" hidden>Administración</button>
+        </nav>
+
+        <div class="directorio-pie">
+            <div class="sesion-info">
+                <span id="sesion-correo" class="sesion-correo"></span>
+                <span id="sesion-rol" class="sesion-rol"></span>
+            </div>
+            <button id="boton-logout" class="boton-logout">Cerrar sesión</button>
+        </div>
+    </aside>
+
+    <main class="area-principal">
+
+        <!-- ======== Disponibilidad ======== -->
+        <section id="seccion-disponibilidad" class="seccion">
+            <header class="barra-superior">
+                <div>
+                    <h1>Disponibilidad</h1>
+                    <p class="subtitulo">Cupos disponibles en el parqueadero, en tiempo real</p>
+                </div>
+                <button id="boton-refrescar" class="boton boton-secundario">Refrescar</button>
+            </header>
+            <div id="zona-mensaje-disp" class="zona-mensaje" hidden></div>
+            <div class="contenedor-tarjetas">
+                <div id="tarjeta-parqueadero" class="tarjeta-parqueadero-grande">
+                    <div class="pq-nombre" id="pq-nombre">—</div>
+                    <div class="pq-cupo" id="pq-disponibles">—</div>
+                    <div class="pq-etiqueta">cupos disponibles</div>
+                    <div class="barra-ocupacion"><div class="barra-relleno" id="pq-barra"></div></div>
+                    <div class="pq-detalle" id="pq-detalle">—</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ======== Portería ======== -->
+        <section id="seccion-porteria" class="seccion" hidden>
+            <header class="barra-superior">
+                <div>
+                    <h1>Portería</h1>
+                    <p class="subtitulo">Registrar el ingreso y la salida de motos</p>
+                </div>
+            </header>
+            <div id="zona-mensaje-port" class="zona-mensaje" hidden></div>
+
+            <div class="contenedor-tarjetas">
+                <div class="grid-porteria">
+
+                    <!-- Entrada TIP -->
+                    <div class="panel-accion">
+                        <h3 class="panel-titulo">Entrada con TIP</h3>
+                        <p class="panel-desc">Para personas registradas. El lector TIP identifica la cédula.</p>
+                        <div class="campo">
+                            <label for="tip-cedula">Cédula (lector TIP)</label>
+                            <input type="text" id="tip-cedula" placeholder="100000000">
+                        </div>
+                        <button id="boton-entrada-tip" class="boton boton-primario">Registrar entrada TIP</button>
+                    </div>
+
+                    <!-- Entrada manual -->
+                    <div class="panel-accion">
+                        <h3 class="panel-titulo">Entrada manual</h3>
+                        <p class="panel-desc">Para externos. El portero ingresa la placa.</p>
+                        <div class="campo">
+                            <label for="man-placa">Placa</label>
+                            <input type="text" id="man-placa" placeholder="ABC12D">
+                        </div>
+                        <button id="boton-entrada-manual" class="boton boton-primario">Registrar entrada manual</button>
+                    </div>
+
+                    <!-- Salida -->
+                    <div class="panel-accion">
+                        <h3 class="panel-titulo">Salida</h3>
+                        <p class="panel-desc">Registrar la salida de una moto por su placa.</p>
+                        <div class="campo">
+                            <label for="sal-placa">Placa</label>
+                            <input type="text" id="sal-placa" placeholder="ABC12D">
+                        </div>
+                        <button id="boton-salida" class="boton boton-secundario">Registrar salida</button>
+                    </div>
+
+                </div>
+                <div id="resultado-porteria" class="resultado-porteria" hidden></div>
+            </div>
+        </section>
+
+        <!-- ======== Notificaciones ======== -->
+        <section id="seccion-notificaciones" class="seccion" hidden>
+            <header class="barra-superior">
+                <div>
+                    <h1>Notificaciones</h1>
+                    <p class="subtitulo">Avisos enviados cuando el parqueadero se llena o se libera</p>
+                </div>
+                <button id="boton-refrescar-notif" class="boton boton-secundario">Refrescar</button>
+            </header>
+            <div class="contenedor-tabla">
+                <table class="ledger">
+                    <thead>
+                        <tr><th>Fecha</th><th>Tipo</th><th>Persona</th><th>Mensaje</th><th>Enviada</th></tr>
+                    </thead>
+                    <tbody id="cuerpo-notif"></tbody>
+                </table>
+                <p id="notif-vacio" class="estado-vacio" hidden>Aún no se han enviado notificaciones.</p>
+            </div>
+        </section>
+
+        <!-- ======== Administración (CRUD) ======== -->
+        <section id="seccion-admin" class="seccion" hidden>
+            <header class="barra-superior">
+                <div>
+                    <h1 id="titulo-tabla">Administración</h1>
+                    <p id="subtitulo-tabla" class="subtitulo">Elige una entidad para ver sus registros</p>
+                </div>
+                <button id="boton-nuevo" class="boton boton-primario" hidden>+ Nuevo registro</button>
+            </header>
+            <nav id="lista-tablas" class="lista-tablas-admin"></nav>
+            <div id="zona-mensaje" class="zona-mensaje" hidden></div>
+            <div class="contenedor-tabla">
+                <table id="tabla-datos" class="ledger" hidden>
+                    <thead id="cabecera-tabla"></thead>
+                    <tbody id="cuerpo-tabla"></tbody>
+                </table>
+                <p id="estado-vacio" class="estado-vacio" hidden>No hay registros todavía.</p>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Panel lateral crear/editar (admin) -->
+    <div id="panel-lateral" class="panel-lateral" hidden>
+        <div class="panel-fondo" id="panel-fondo"></div>
+        <div class="panel-contenido">
+            <div class="panel-cabecera">
+                <span id="panel-titulo" class="ficha-etiqueta">Ficha de registro</span>
+                <button id="panel-cerrar" class="boton-cerrar" aria-label="Cerrar">×</button>
+            </div>
+            <form id="formulario-registro" class="formulario">
+                <div id="campos-formulario" class="campos"></div>
+                <div class="acciones-formulario">
+                    <button type="submit" class="boton boton-primario">Guardar</button>
+                    <button type="button" id="boton-eliminar" class="boton boton-peligro" hidden>Eliminar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
