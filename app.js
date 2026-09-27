@@ -13,11 +13,38 @@ let tablaActual = null;
 let registroEnEdicion = null;
 let temporizadorDisp = null;
 
-// fetch que siempre manda la cookie de sesion y no cachea.
-// Antepone la URL del backend a las rutas que empiezan por /api o /auth.
+// ---------- Manejo del token de sesion ----------
+// Como el frontend (Vercel) y el backend (Render) estan en dominios
+// distintos, las cookies de terceros se bloquean. Por eso guardamos
+// el token en localStorage y lo mandamos en el encabezado Authorization.
+
+// Al volver del login, el backend nos manda el token en la URL (#token=...)
+// Lo capturamos, lo guardamos, y limpiamos la URL.
+(function capturarTokenDeLaURL() {
+    const hash = window.location.hash || '';
+    const query = window.location.search || '';
+    let token = null;
+    let m = hash.match(/token=([^&]+)/);
+    if (m) token = m[1];
+    if (!token) { m = query.match(/token=([^&]+)/); if (m) token = m[1]; }
+    if (token) {
+        try { localStorage.setItem('token', token); } catch {}
+        // Limpia la URL para no dejar el token a la vista
+        history.replaceState(null, '', window.location.pathname);
+    }
+})();
+
+function obtenerToken() {
+    try { return localStorage.getItem('token'); } catch { return null; }
+}
+
+// fetch que manda el token en el encabezado Authorization y no cachea.
 function fetchAuth(url, opciones = {}) {
     const destino = url.startsWith('/api') || url.startsWith('/auth') ? API + url : url;
-    return fetch(destino, { ...opciones, credentials: 'include', cache: 'no-store' });
+    const token = obtenerToken();
+    const headers = { ...(opciones.headers || {}) };
+    if (token) headers['Authorization'] = 'Bearer ' + token;
+    return fetch(destino, { ...opciones, headers, cache: 'no-store' });
 }
 
 function nombreLegible(texto) {
@@ -86,6 +113,7 @@ document.querySelectorAll('.item-seccion').forEach((boton) => {
 // ---------- Logout ----------
 document.getElementById('boton-logout').addEventListener('click', async () => {
     await fetchAuth('/auth/logout', { method: 'POST' });
+    try { localStorage.removeItem('token'); } catch {}
     location.reload();
 });
 
